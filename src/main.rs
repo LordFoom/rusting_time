@@ -47,6 +47,7 @@ fn main()->Result<(), Box<dyn Error>> {
     //set the label
     let pause_msieur = Duration::from_millis(100);
     loop{
+        print!("\x1B[2J");
         // println!("I like to parse it parse it {}", millis);
         let elapsed_millis = start_instant.elapsed().as_millis();
         // println!("elapsed={}, millis={}", elapsed_millis, millis);
