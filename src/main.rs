@@ -14,13 +14,17 @@ use std::time::{Duration, Instant};
     long_about = "none"
 )]
 struct Args {
+    ///How long in minutes should the countdown timer be? Default 30 minutes
     #[arg(long, short)]
     time: Option<u128>,
+    ///How many times will we count down? default 10, negative number is infinite
+    #[arg(long, short)]
+    count: Option<u128>,
 }
 
-struct Timer {
-    current_duration: Duration,
-}
+//struct Timer {
+//    current_duration: Duration,
+//}
 ///Count down timer for the terminal
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
@@ -33,6 +37,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         //but for testing, 30s
         // 30*1000
     };
+
+    let max_count = args.count.unwrap_or(10);
     //get the original size
     let (cols, rows) = size()?;
     let mut stdout = stdout();
@@ -62,13 +68,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             stdout.queue(style::PrintStyledContent(format_count(count).yellow()))?;
             stdout.flush()?;
             std::thread::sleep(pause_msieur);
-            if remaining_millis <= 0 {
+            if remaining_millis == 0 {
                 break;
             }
         }
 
         count += 1;
-        if count > 10 {
+        if count > max_count && max_count > 0 {
             break;
         }
     }
