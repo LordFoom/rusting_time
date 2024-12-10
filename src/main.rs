@@ -1,4 +1,5 @@
 use clap::{arg, Parser};
+use core::panic;
 use crossterm::style::Stylize;
 use crossterm::terminal::size;
 use crossterm::{cursor, style, terminal, ExecutableCommand, QueueableCommand};
@@ -17,9 +18,13 @@ struct Args {
     ///How long in minutes should the countdown timer be? Default 30 minutes
     #[arg(long, short)]
     time: Option<u128>,
-    ///How many times will we count down? default 10, negative number is infinite
+    ///How many times will we count down? default 10; zero or less is forever
     #[arg(long, short)]
     count: Option<u128>,
+
+    ///Optional sound file to play when we roll over and the timer completed count increases.
+    #[arg(long, short)]
+    sound_file: Option<String>,
 }
 
 //struct Timer {
@@ -39,6 +44,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let max_count = args.count.unwrap_or(10);
+
+    //was a sound file specified? check if it exists
+    if let Some(file_name) = args.sound_file {
+        if !std::path::Path::new(&file_name).exists() {
+            panic!(
+                "{} '{}'",
+                "Could not find file".magenta(),
+                file_name.red().bold()
+            );
+        }
+    }
     //get the original size
     let (cols, rows) = size()?;
     let mut stdout = stdout();
@@ -69,6 +85,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             stdout.flush()?;
             std::thread::sleep(pause_msieur);
             if remaining_millis == 0 {
+                //play sound if the args say so
+                //if
                 break;
             }
         }
