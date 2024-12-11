@@ -86,7 +86,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             std::thread::sleep(pause_msieur);
             if remaining_millis == 0 {
                 //play sound if the args say so
-                //if
+                if let Some(sound_file) = args.sound_file {
+                    play_sound(sound_file);
+                }
                 break;
             }
         }
@@ -100,6 +102,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     stdout.execute(terminal::SetSize(cols, rows))?;
     // println!("That's the spiritus!");
     Ok(())
+}
+
+///Play the file in the location specified
+fn play_sound(sound_file: String) -> _ {
+    todo!()
 }
 
 fn format_millis(millis: u128) -> String {
