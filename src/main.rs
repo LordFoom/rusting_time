@@ -105,8 +105,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 ///Play the file in the location specified
-fn play_sound(sound_file: String) -> _ {
-    todo!()
+fn play_sound(sound_file: String) -> Result<()> {
+    let (_stream, stream_handle) = rodio::OutputStream::try_default()?;
+    Ok(())
 }
 
 fn format_millis(millis: u128) -> String {

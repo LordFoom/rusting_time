@@ -9,6 +9,7 @@ edition = "2021"
 clap =  {version="4", features = ["derive"]}
 chrono = "0.4.24"
 crossterm = "0.26"
+rodio = "0.20.1"
 
 [[bin]]
 name="rt"
