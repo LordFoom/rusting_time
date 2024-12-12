@@ -1,10 +1,12 @@
+use anyhow::Result;
 use clap::{arg, Parser};
 use core::panic;
 use crossterm::style::Stylize;
 use crossterm::terminal::size;
 use crossterm::{cursor, style, terminal, ExecutableCommand, QueueableCommand};
-use std::error::Error;
-use std::io::{stdout, Write};
+use rodio::{Decoder, Source};
+use std::fs::File;
+use std::io::{stdout, BufReader, Write};
 use std::time::{Duration, Instant};
 #[derive(Parser)]
 #[command(name = "")]
@@ -31,7 +33,7 @@ struct Args {
 //    current_duration: Duration,
 //}
 ///Count down timer for the terminal
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<()> {
     let args = Args::parse();
     //how many minutes are we going to do?
     let millis = if let Some(t) = args.time {
@@ -50,7 +52,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         if !std::path::Path::new(&file_name).exists() {
             panic!(
                 "{} '{}'",
-                "Could not find file".magenta(),
+                "Could not find sound file".magenta(),
                 file_name.red().bold()
             );
         }
@@ -86,7 +88,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             std::thread::sleep(pause_msieur);
             if remaining_millis == 0 {
                 //play sound if the args say so
-                if let Some(sound_file) = args.sound_file {
+                if let Some(sound_file) = &args.sound_file {
                     play_sound(sound_file);
                 }
                 break;
@@ -105,8 +107,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 ///Play the file in the location specified
-fn play_sound(sound_file: String) -> Result<()> {
+fn play_sound(sound_file: &str) -> Result<()> {
     let (_stream, stream_handle) = rodio::OutputStream::try_default()?;
+    let file = BufReader::new(File::open(sound_file)?);
+    let source = Decoder::new(file)?;
+    stream_handle.play_raw(source.convert_samples());
     Ok(())
 }
 
