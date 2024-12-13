@@ -4,9 +4,10 @@ use core::panic;
 use crossterm::style::Stylize;
 use crossterm::terminal::size;
 use crossterm::{cursor, style, terminal, ExecutableCommand, QueueableCommand};
-use rodio::{Decoder, Source};
+use rodio::{Decoder, Sink};
 use std::fs::File;
 use std::io::{stdout, BufReader, Write};
+use std::path;
 use std::time::{Duration, Instant};
 #[derive(Parser)]
 #[command(name = "")]
@@ -40,15 +41,15 @@ fn main() -> Result<()> {
         t * 1000 * 60
     } else {
         //half an hour
-        30 * 60 * 1000
-        //but for testing, 30s
-        // 30*1000
+        //30 * 60 * 1000
+        //but for testing, 3s
+        3 * 1000
     };
 
     let max_count = args.count.unwrap_or(10);
 
     //was a sound file specified? check if it exists
-    if let Some(file_name) = args.sound_file {
+    if let Some(file_name) = args.sound_file.clone() {
         if !std::path::Path::new(&file_name).exists() {
             panic!(
                 "{} '{}'",
@@ -88,8 +89,11 @@ fn main() -> Result<()> {
             std::thread::sleep(pause_msieur);
             if remaining_millis == 0 {
                 //play sound if the args say so
-                if let Some(sound_file) = &args.sound_file {
-                    play_sound(sound_file);
+                if let Some(sound_file) = args.sound_file.clone() {
+                    if !path::Path::new(&sound_file).exists() {
+                        panic!("The file {} does not exist!!!", &sound_file);
+                    }
+                    play_sound(&sound_file)?;
                 }
                 break;
             }
@@ -109,9 +113,12 @@ fn main() -> Result<()> {
 ///Play the file in the location specified
 fn play_sound(sound_file: &str) -> Result<()> {
     let (_stream, stream_handle) = rodio::OutputStream::try_default()?;
+    let sink = Sink::try_new(&stream_handle)?;
+
     let file = BufReader::new(File::open(sound_file)?);
     let source = Decoder::new(file)?;
-    stream_handle.play_raw(source.convert_samples());
+    sink.append(source);
+    sink.sleep_until_end();
     Ok(())
 }
 
