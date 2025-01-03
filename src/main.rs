@@ -41,9 +41,9 @@ fn main() -> Result<()> {
         t * 1000 * 60
     } else {
         //half an hour
-        //30 * 60 * 1000
+        30 * 60 * 1000
         //but for testing, 3s
-        3 * 1000
+        //3 * 1000
     };
 
     let max_count = args.count.unwrap_or(10);
